@@ -1,7 +1,9 @@
 package qfmt
 
 import (
+	"errors"
 	"io"
+	"regexp"
 	"strings"
 )
 
@@ -10,9 +12,14 @@ type Formatter interface {
 	//Bind(a ...interface{}) (Formatter, error)
 }
 
-type emitter func(w io.Writer, a ...interface{}) (n int, err error)
+// NOTE: copied from fmt/print.go
+type Stringer interface {
+	String() string
+}
 
-type fmt struct {
+type emitter func(w io.Writer, a []interface{}) (n int, err error)
+
+type fmtr struct {
 	format   string
 	emitters []emitter
 }
@@ -22,14 +29,14 @@ func New(format string) (Formatter, error) {
 	if err != nil {
 		return nil, err
 	}
-	f := fmt{
+	f := fmtr{
 		format:   format,
 		emitters: emitters,
 	}
 	return &f, nil
 }
 
-func (f *fmt) Format(w io.Writer, a ...interface{}) (n int, err error) {
+func (f *fmtr) Format(w io.Writer, a ...interface{}) (n int, err error) {
 	for _, e := range f.emitters {
 		m, err := e(w, a)
 		n += m
@@ -46,8 +53,34 @@ func countTokens(s string) int {
 
 func toEmitters(format string) (emitters []emitter, err error) {
 	emitters = make([]emitter, 0, countTokens(format)*2+1)
-	for i = 0; i < len(format); i += 1 {
+	idx := 0
+	for i := 0; i < len(format); {
+		e, t, n, err := toEmitter(format[i:], idx)
+		if err != nil {
+			return nil, err
+		}
+		if t == "" {
+			return nil, errors.New("empty token: " + format[i:])
+		}
+		idx += n
+		emitters = append(emitters, e)
+		i += len(t)
 	}
-	// TODO:
 	return emitters, nil
+}
+
+var rx_const = regexp.MustCompile(`^(?:%%|[^%])+`)
+
+func toEmitter(s string, idx int) (e emitter, token string, nargs int, err error) {
+	if m := rx_const.FindString(s); m != "" {
+		return const_emitter(m), m, 0, nil
+	}
+	// TODO: parse and build a variable emitter.
+	return nil, "", 0, nil
+}
+
+func const_emitter(s string) emitter {
+	return func(w io.Writer, _ []interface{}) (n int, err error) {
+		return w.Write([]byte(s))
+	}
 }
