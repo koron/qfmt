@@ -3,6 +3,7 @@ package qfmt
 import (
 	"errors"
 	"io"
+	"reflect"
 	"strconv"
 )
 
@@ -90,24 +91,39 @@ func emit_string(w io.Writer, a interface{}) (n int, err error) {
 }
 
 func emit_int64(w io.Writer, v int64) (n int, err error) {
-	// TODO: impl. emit_int64
-	return
+	s := strconv.FormatInt(v, 10)
+	return w.Write([]byte(s))
 }
 
 func emit_uint64(w io.Writer, v uint64) (n int, err error) {
-	// TODO: impl. emit_uint64
+	s := strconv.FormatUint(v, 10)
+	return w.Write([]byte(s))
+}
+
+// emit_value emit in %v format.
+func emit_value(w io.Writer, a interface{}) (n int, err error) {
+	// TODO: implement emit_value
 	return
 }
 
+func emit_reflect_value(w io.Writer, v reflect.Value) (n int, err error) {
+	// TODO: implement emit_reflect_value
+	return
+}
 
 func emit_badverb(w io.Writer, v string, a interface{}) (n int, err error) {
 	w.Write([]byte("%!"))
 	w.Write([]byte(v))
 	w.Write([]byte("("))
-	switch {
-	case a != nil:
-		// TODO: emit a.
-	default:
+	if a != nil {
+		w.Write([]byte(reflect.TypeOf(a).String()))
+		w.Write([]byte("="))
+		emit_value(w, a)
+	} else if rv := reflect.ValueOf(a); rv.IsValid() {
+		w.Write([]byte(rv.Type().String()))
+		w.Write([]byte("="))
+		emit_reflect_value(w, rv)
+	} else {
 		w.Write(nilAngleBytes)
 	}
 	w.Write([]byte(")"))
