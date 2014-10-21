@@ -6,6 +6,26 @@ import (
 	"strconv"
 )
 
+// Some constants in the form of bytes, to avoid string overhead.
+// Needlessly fastidious, I suppose.
+var (
+	commaSpaceBytes  = []byte(", ")
+	nilAngleBytes    = []byte("<nil>")
+	nilParenBytes    = []byte("(nil)")
+	nilBytes         = []byte("nil")
+	mapBytes         = []byte("map[")
+	percentBangBytes = []byte("%!")
+	missingBytes     = []byte("(MISSING)")
+	badIndexBytes    = []byte("(BADINDEX)")
+	panicBytes       = []byte("(PANIC=")
+	extraBytes       = []byte("%!(EXTRA ")
+	irparenBytes     = []byte("i)")
+	bytesBytes       = []byte("[]byte{")
+	badWidthBytes    = []byte("%!(BADWIDTH)")
+	badPrecBytes     = []byte("%!(BADPREC)")
+	noVerbBytes      = []byte("%!(NOVERB)")
+)
+
 type vemitter func(w io.Writer, a interface{}) (n int, err error)
 
 func (v vemitter) bind(idx int) emitter {
@@ -32,8 +52,31 @@ func type2emitter(typename string) (vemitter, error) {
 }
 
 func emit_integer(w io.Writer, a interface{}) (n int, err error) {
-	// TODO: format integer.
-	return 0, nil
+	switch f := a.(type) {
+	case int:
+		n, err = emit_int64(w, int64(f))
+	case int8:
+		n, err = emit_int64(w, int64(f))
+	case int16:
+		n, err = emit_int64(w, int64(f))
+	case int32:
+		n, err = emit_int64(w, int64(f))
+	case int64:
+		n, err = emit_int64(w, int64(f))
+	case uint:
+		n, err = emit_uint64(w, uint64(f))
+	case uint8:
+		n, err = emit_uint64(w, uint64(f))
+	case uint16:
+		n, err = emit_uint64(w, uint64(f))
+	case uint32:
+		n, err = emit_uint64(w, uint64(f))
+	case uint64:
+		n, err = emit_uint64(w, uint64(f))
+	default:
+		n, err = emit_badverb(w, "d", a)
+	}
+	return
 }
 
 func emit_string(w io.Writer, a interface{}) (n int, err error) {
@@ -43,5 +86,30 @@ func emit_string(w io.Writer, a interface{}) (n int, err error) {
 	if s, ok := a.(Stringer); ok {
 		return w.Write([]byte(s.String()))
 	}
-	return 0, nil
+	return emit_badverb(w, "s", a)
+}
+
+func emit_int64(w io.Writer, v int64) (n int, err error) {
+	// TODO: impl. emit_int64
+	return
+}
+
+func emit_uint64(w io.Writer, v uint64) (n int, err error) {
+	// TODO: impl. emit_uint64
+	return
+}
+
+
+func emit_badverb(w io.Writer, v string, a interface{}) (n int, err error) {
+	w.Write([]byte("%!"))
+	w.Write([]byte(v))
+	w.Write([]byte("("))
+	switch {
+	case a != nil:
+		// TODO: emit a.
+	default:
+		w.Write(nilAngleBytes)
+	}
+	w.Write([]byte(")"))
+	return
 }
