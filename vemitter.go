@@ -38,8 +38,8 @@ func (v vemitter) bind(idx int) emitter {
 	}
 }
 
-func type2emitter(typename string) (vemitter, error) {
-	switch typename {
+func verb2emitter(verb string) (vemitter, error) {
+	switch verb {
 	case "d":
 		return emit_integer, nil
 	case "s":
@@ -48,7 +48,7 @@ func type2emitter(typename string) (vemitter, error) {
 	// TODO: add emitter for each types
 
 	default:
-		return nil, errors.New("unknown type:" + typename)
+		return nil, errors.New("unknown verb:" + verb)
 	}
 }
 

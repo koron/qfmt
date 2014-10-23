@@ -70,13 +70,20 @@ func toEmitters(format string) (emitters []emitter, err error) {
 }
 
 var rx_const = regexp.MustCompile(`^(?:%%|[^%])+`)
+var rx_verb = regexp.MustCompile(`^%([ds])`)
 
 func toEmitter(s string, idx int) (e emitter, token string, nargs int, err error) {
 	if m := rx_const.FindString(s); m != "" {
 		return const_emitter(m), m, 0, nil
+	} else if m := rx_verb.FindStringSubmatch(s); m != nil {
+		ve, err := verb2emitter(m[1])
+		if err != nil {
+			return nil, "", 0, err
+		}
+		return ve.bind(idx), m[0], 1, nil
+	} else {
+		return nil, "", 0, errors.New("unknown format: " + s)
 	}
-	// TODO: parse and build a variable emitter.
-	return nil, "", 0, nil
 }
 
 func const_emitter(s string) emitter {
