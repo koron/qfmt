@@ -24,16 +24,22 @@ type fmtr struct {
 	emitters []emitter
 }
 
+var cache map[string]*fmtr = make(map[string]*fmtr)
+
 func New(format string) (Formatter, error) {
+	if f, ok := cache[format]; ok {
+		return f, nil
+	}
 	emitters, err := toEmitters(format)
 	if err != nil {
 		return nil, err
 	}
-	f := fmtr{
+	f := &fmtr{
 		format:   format,
 		emitters: emitters,
 	}
-	return &f, nil
+	cache[format] = f
+	return f, nil
 }
 
 func (f *fmtr) Format(w io.Writer, a ...interface{}) (n int, err error) {
