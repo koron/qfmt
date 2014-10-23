@@ -21,7 +21,7 @@ func Printf(format string, a ...interface{}) (n int, err error) {
 func Sprintf(format string, a ...interface{}) string {
 	b := new(bytes.Buffer)
 	_, err := Fprintf(b, format, a...)
-	if err == nil {
+	if err != nil {
 		return ""
 	}
 	return b.String()
