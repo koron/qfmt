@@ -11,7 +11,7 @@ func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error) {
 	if err != nil {
 		return 0, err
 	}
-	return f.Format(w, a...)
+	return f.Format(to_w(w), a...)
 }
 
 func Printf(format string, a ...interface{}) (n int, err error) {
