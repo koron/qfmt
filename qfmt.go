@@ -92,8 +92,7 @@ func toEmitter(s string, idx int) (e emitter, token string, nargs int, err error
 }
 
 func const_emitter(s string) emitter {
-	b := []byte(s)
 	return func(w Writer, _ []interface{}) (n int, err error) {
-		return w.Write(b)
+		return w.WriteString(s)
 	}
 }
