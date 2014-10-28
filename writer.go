@@ -12,18 +12,18 @@ func to_w(iow io.Writer) (w Writer) {
 	case Writer:
 		return w
 	default:
-		return &wrapWrite{writer: iow}
+		return &wrapWriter{writer: iow}
 	}
 }
 
-type wrapWrite struct {
+type wrapWriter struct {
 	writer io.Writer
 }
 
-func (w *wrapWrite) Write(p []byte) (n int, err error) {
+func (w *wrapWriter) Write(p []byte) (n int, err error) {
 	return w.writer.Write(p)
 }
 
-func (w *wrapWrite) WriteString(s string) (n int, err error) {
+func (w *wrapWriter) WriteString(s string) (n int, err error) {
 	return w.writer.Write([]byte(s))
 }
