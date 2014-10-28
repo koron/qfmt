@@ -81,23 +81,25 @@ func emit_integer(w io.Writer, a interface{}) (n int, err error) {
 }
 
 func emit_string(w io.Writer, a interface{}) (n int, err error) {
-	if s, ok := a.(string); ok {
-		return w.Write([]byte(s))
+	switch v := a.(type) {
+	case string:
+		n, err = io.WriteString(w, v)
+	case Stringer:
+		n, err = io.WriteString(w, v.String())
+	default:
+		n, err = emit_badverb(w, "s", a)
 	}
-	if s, ok := a.(Stringer); ok {
-		return w.Write([]byte(s.String()))
-	}
-	return emit_badverb(w, "s", a)
+	return
 }
 
 func emit_int64(w io.Writer, v int64) (n int, err error) {
 	s := strconv.FormatInt(v, 10)
-	return w.Write([]byte(s))
+	return io.WriteString(w, s)
 }
 
 func emit_uint64(w io.Writer, v uint64) (n int, err error) {
 	s := strconv.FormatUint(v, 10)
-	return w.Write([]byte(s))
+	return io.WriteString(w, s)
 }
 
 // emit_value emit in %v format.
@@ -112,20 +114,20 @@ func emit_reflect_value(w io.Writer, v reflect.Value) (n int, err error) {
 }
 
 func emit_badverb(w io.Writer, v string, a interface{}) (n int, err error) {
-	w.Write([]byte("%!"))
-	w.Write([]byte(v))
-	w.Write([]byte("("))
+	io.WriteString(w, "%!")
+	io.WriteString(w, v)
+	io.WriteString(w, "(")
 	if a != nil {
-		w.Write([]byte(reflect.TypeOf(a).String()))
-		w.Write([]byte("="))
+		io.WriteString(w, reflect.TypeOf(a).String())
+		io.WriteString(w, "=")
 		emit_value(w, a)
 	} else if rv := reflect.ValueOf(a); rv.IsValid() {
-		w.Write([]byte(rv.Type().String()))
-		w.Write([]byte("="))
+		io.WriteString(w, rv.Type().String())
+		io.WriteString(w, "=")
 		emit_reflect_value(w, rv)
 	} else {
 		w.Write(nilAngleBytes)
 	}
-	w.Write([]byte(")"))
+	io.WriteString(w, ")")
 	return
 }
