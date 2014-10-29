@@ -2,13 +2,12 @@ package qfmt
 
 import (
 	"errors"
-	"io"
 	"regexp"
 	"strings"
 )
 
 type Formatter interface {
-	Format(w io.Writer, a ...interface{}) (n int, err error)
+	Format(w Writer, a ...interface{}) (n int, err error)
 	//Bind(a ...interface{}) (Formatter, error)
 }
 
@@ -17,7 +16,7 @@ type Stringer interface {
 	String() string
 }
 
-type emitter func(w io.Writer, a []interface{}) (n int, err error)
+type emitter func(w Writer, a []interface{}) (n int, err error)
 
 type fmtr struct {
 	format   string
@@ -42,7 +41,7 @@ func New(format string) (Formatter, error) {
 	return f, nil
 }
 
-func (f *fmtr) Format(w io.Writer, a ...interface{}) (n int, err error) {
+func (f *fmtr) Format(w Writer, a ...interface{}) (n int, err error) {
 	for _, e := range f.emitters {
 		m, err := e(w, a)
 		n += m
@@ -93,8 +92,7 @@ func toEmitter(s string, idx int) (e emitter, token string, nargs int, err error
 }
 
 func const_emitter(s string) emitter {
-	b := []byte(s)
-	return func(w io.Writer, _ []interface{}) (n int, err error) {
-		return w.Write(b)
+	return func(w Writer, _ []interface{}) (n int, err error) {
+		return w.WriteString(s)
 	}
 }
