@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"os"
+	"sync"
 )
 
 func Fprintf(w io.Writer, format string, a ...interface{}) (n int, err error) {
@@ -18,11 +19,14 @@ func Printf(format string, a ...interface{}) (n int, err error) {
 	return Fprintf(os.Stdout, format, a...)
 }
 
+var bbPool = sync.Pool{
+	New: func() interface{} { return new(bytes.Buffer) },
+}
+
 func Sprintf(format string, a ...interface{}) string {
-	b := new(bytes.Buffer)
-	_, err := Fprintf(b, format, a...)
-	if err != nil {
-		return ""
-	}
-	return b.String()
+	b := buf_get()
+	Fprintf(b, format, a...)
+	s := string(*b)
+	buf_put(b)
+	return s
 }
