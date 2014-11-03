@@ -23,10 +23,10 @@ type fmtr struct {
 	emitters []emitter
 }
 
-var cache map[string]*fmtr = make(map[string]*fmtr)
+var cachedFmtr map[string]*fmtr = make(map[string]*fmtr)
 
 func New(format string) (Formatter, error) {
-	if f, ok := cache[format]; ok {
+	if f, ok := cachedFmtr[format]; ok {
 		return f, nil
 	}
 	emitters, err := toEmitters(format)
@@ -37,7 +37,7 @@ func New(format string) (Formatter, error) {
 		format:   format,
 		emitters: emitters,
 	}
-	cache[format] = f
+	cachedFmtr[format] = f
 	return f, nil
 }
 
