@@ -45,6 +45,20 @@ func BenchmarkFmtFprintfFourString(b *testing.B) {
 	}
 }
 
+func BenchmarkQfmtFprintfTenString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Fprintf(ioutil.Discard, "%s.%s.%s.%s.%s.%s.%s.%s.%s.%s", "000",
+			"111", "222", "333", "444", "555", "666", "777", "888", "999")
+	}
+}
+
+func BenchmarkFmtFprintfTenString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		fmt.Fprintf(ioutil.Discard, "%s.%s.%s.%s.%s.%s.%s.%s.%s.%s", "000",
+			"111", "222", "333", "444", "555", "666", "777", "888", "999")
+	}
+}
+
 func BenchmarkQfmtFprintfInt(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Fprintf(ioutil.Discard, "PREFIX %d SUFFIX", 1234567890)
@@ -105,6 +119,19 @@ func BenchmarkFmtSprintfFourString(b *testing.B) {
 	}
 }
 
+func BenchmarkQfmtSprintfTenString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Sprintf("%s.%s.%s.%s.%s.%s.%s.%s.%s.%s", "000",
+			"111", "222", "333", "444", "555", "666", "777", "888", "999")
+	}
+}
+
+func BenchmarkFmtSprintfTenString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		fmt.Sprintf("%s.%s.%s.%s.%s.%s.%s.%s.%s.%s", "000",
+			"111", "222", "333", "444", "555", "666", "777", "888", "999")
+	}
+}
 
 func BenchmarkQfmtSprintfInt(b *testing.B) {
 	for i := 0; i < b.N; i++ {
