@@ -45,6 +45,18 @@ func BenchmarkFmtFprintfInt(b *testing.B) {
 	}
 }
 
+func BenchmarkQfmtFprintfIPv4(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Fprintf(ioutil.Discard, "%d.%d.%d.%d", 192, 168, 10, 254)
+	}
+}
+
+func BenchmarkFmtFprintfIPv4(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		fmt.Fprintf(ioutil.Discard, "%d.%d.%d.%d", 192, 168, 10, 254)
+	}
+}
+
 func BenchmarkQfmtSprintfConst(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Sprintf("Hello World")
@@ -81,6 +93,18 @@ func BenchmarkFmtSprintfInt(b *testing.B) {
 	}
 }
 
+func BenchmarkQfmtSprintfIPv4(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Sprintf("%d.%d.%d.%d", 192, 168, 10, 254)
+	}
+}
+
+func BenchmarkFmtSprintfIPv4(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		fmt.Sprintf("%d.%d.%d.%d", 192, 168, 10, 254)
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////
 // Tests
 
@@ -107,4 +131,8 @@ func TestFormatInt(t *testing.T) {
 	formatCheck(t, "PREFIX 1234567890 SUFFIX", "PREFIX %d SUFFIX", 1234567890)
 	formatCheck(t, "1234567890 SUFFIX", "%d SUFFIX", 1234567890)
 	formatCheck(t, "PREFIX 1234567890", "PREFIX %d", 1234567890)
+}
+
+func TestFormatIPv4(t *testing.T) {
+	formatCheck(t, "192.168.10.254", "%d.%d.%d.%d", 192, 168, 10, 254)
 }
